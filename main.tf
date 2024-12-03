@@ -1,3 +1,6 @@
+################ Infrastructure Provider Info ######################
+
+# Define the required providers
 terraform {
   required_providers {
     aws = {
@@ -6,19 +9,25 @@ terraform {
   }
 }
 
+# Configure the AWS provider with the specified region
 provider "aws" {
-  region  = var.aws_region
+  region  = var.aws_region  
 }
 
+############################# S3 Infarstructure #######################################
+
+# Use a module to manage template files in the specified directory
 module "template_files" {
-  source  = "hashicorp/dir/template"
-  base_dir = "${path.module}/your_static_website.com" # your local machine project file
+  source  = "hashicorp/dir/template" 
+  base_dir = "${path.module}/JohnDoe-gh-pages" #your_static_website.com" # your local machine project file
 }
 
+# Create an S3 bucket to host the static website
 resource "aws_s3_bucket" "hosting_bucket" {
   bucket = var.bucket_name
 }
 
+# Configure public access settings for the S3 bucket
 resource "aws_s3_bucket_public_access_block" "hosting_bucket_public_access" {
   bucket = aws_s3_bucket.hosting_bucket.id
   
@@ -26,10 +35,9 @@ resource "aws_s3_bucket_public_access_block" "hosting_bucket_public_access" {
   block_public_policy     = false
   ignore_public_acls      = false
   restrict_public_buckets = false
-
-  
 }
 
+# Define a bucket policy to allow public read access to all objects in the bucket
 resource "aws_s3_bucket_policy" "hosting_bucket_policy" {
   bucket = aws_s3_bucket.hosting_bucket.id
 
@@ -46,6 +54,7 @@ resource "aws_s3_bucket_policy" "hosting_bucket_policy" {
   })
 }
 
+# Configure the S3 bucket to host a static website
 resource "aws_s3_bucket_website_configuration" "hosting_bucket_website_configuration" {
   bucket = aws_s3_bucket.hosting_bucket.id
 
@@ -54,6 +63,7 @@ resource "aws_s3_bucket_website_configuration" "hosting_bucket_website_configura
   }
 }
 
+# Upload the files from the local project directory to the S3 bucket
 resource "aws_s3_object" "hosting_bucket_files" {
   bucket = aws_s3_bucket.hosting_bucket.id
 
@@ -69,3 +79,10 @@ resource "aws_s3_object" "hosting_bucket_files" {
 
 }
  
+############################# Crete AWS Application #######################################
+
+# Register new application
+resource "aws_servicecatalogappregistry_application" "S3_Static_web_app" {
+  name        = "S3WebApp"
+  description = "S3 static web application"
+}
