@@ -7,6 +7,14 @@ terraform {
       source  = "hashicorp/aws"
     }
   }
+
+  backend "remote" {
+    organization = "General_projects" # Replace with your organization name
+
+    workspaces {
+      name = "Host_static_web_on_S3_terrafrom" # Replace with your workspace name
+    }
+  }
 }
 
 # Configure the AWS provider with the specified region
